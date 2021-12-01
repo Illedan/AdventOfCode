@@ -17,12 +17,13 @@ namespace AOC
         {
             Setup(1);
             var input = ReadInts;
-            var prev = input[0];
+            var prev = input.Take(3).Sum();
             var inc = 0;
-            for(var i = 0; i< input.Length; i++)
+            for(var i = 1; i< input.Length; i++)
             {
-                if (input[i] > prev) inc++;
-                prev = input[i];
+                var next = input.Skip(i).Take(3).Sum();
+                if (next > prev) inc++;
+                prev = next;
             }
             Console.WriteLine(inc);
         }
