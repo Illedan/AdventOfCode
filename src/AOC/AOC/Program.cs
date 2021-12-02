@@ -20,11 +20,16 @@ namespace AOC
             var input = Lines.Select(s => s.Split()).Select(l => new KeyValue<int>(l[0], int.Parse(l[1]))).ToArray();
             var x = 0;
             var y = 0;
+            var aim = 0;
             foreach(var l in input)
             {
-                if (l.Key == "forward") x += l.Value;
-                else if (l.Key == "up") y -= l.Value;
-                else if (l.Key == "down") y += l.Value;
+                if (l.Key == "forward")
+                {
+                    x += l.Value;
+                    y += aim * l.Value;
+                }
+                else if (l.Key == "up") aim -= l.Value;
+                else if (l.Key == "down") aim += l.Value;
             }
             Console.WriteLine(x + " " + y);
             Console.WriteLine(x * y);
