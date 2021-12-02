@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -10,7 +11,23 @@ namespace AOC
         private static string[] Lines;
         static void Main(string[] args)
         {
-            Solve1();
+            Solve2();
+        }
+
+        static void Solve2()
+        {
+            Setup(2);
+            var input = Lines.Select(s => s.Split()).Select(l => new KeyValue<int>(l[0], int.Parse(l[1]))).ToArray();
+            var x = 0;
+            var y = 0;
+            foreach(var l in input)
+            {
+                if (l.Key == "forward") x += l.Value;
+                else if (l.Key == "up") y -= l.Value;
+                else if (l.Key == "down") y += l.Value;
+            }
+            Console.WriteLine(x + " " + y);
+            Console.WriteLine(x * y);
         }
 
         static void Solve1()
@@ -33,6 +50,17 @@ namespace AOC
         static void Setup(int number)
         {
             Lines = File.ReadAllLines(Path.Combine(InputLocation, number + ".txt"));
+        }
+    }
+
+    public class KeyValue<T>
+    {
+        public string Key;
+        public T Value;
+        public KeyValue(string key, T value)
+        {
+            Key = key;
+            Value = value;
         }
     }
 }
