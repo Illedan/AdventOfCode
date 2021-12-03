@@ -11,7 +11,43 @@ namespace AOC
         private static string[] Lines;
         static void Main(string[] args)
         {
-            Solve2();
+            Solve3();
+        }
+
+        static void Solve3()
+        {
+            Setup(3);
+            var bitcount = Lines[0].Length;
+            var zero = new int[bitcount];
+            var one = new int[bitcount];
+            foreach(var l in Lines)
+            {
+                for(var i = 0; i < bitcount; i++)
+                {
+                    if (l[i] == '0') zero[i]++;
+                    if (l[i] == '1') one[i]++;
+                }
+            }
+
+            var dominant = "";
+            var opposite = "";
+            for(var i = 0; i < bitcount; i++)
+            {
+                if( zero[i] > one[i])
+                {
+
+                    dominant += 0;
+                    opposite += 1;
+                }
+                else
+                {
+                    dominant += 1;
+                    opposite += 0;
+                }
+            }
+            var num1 = Convert.ToInt64(dominant, 2);
+            var num2 = Convert.ToInt64(opposite,2);
+            Console.WriteLine( num1*num2);
         }
 
         static void Solve2()
