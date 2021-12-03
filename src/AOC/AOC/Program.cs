@@ -17,37 +17,36 @@ namespace AOC
         static void Solve3()
         {
             Setup(3);
+            var dominant = Lines.Select(s => s).ToList();
+            var least = Lines.Select(s => s).ToList(); 
             var bitcount = Lines[0].Length;
-            var zero = new int[bitcount];
-            var one = new int[bitcount];
-            foreach(var l in Lines)
-            {
-                for(var i = 0; i < bitcount; i++)
-                {
-                    if (l[i] == '0') zero[i]++;
-                    if (l[i] == '1') one[i]++;
-                }
-            }
-
-            var dominant = "";
-            var opposite = "";
             for(var i = 0; i < bitcount; i++)
             {
-                if( zero[i] > one[i])
-                {
-
-                    dominant += 0;
-                    opposite += 1;
-                }
-                else
-                {
-                    dominant += 1;
-                    opposite += 0;
-                }
+                var val = GetMostSignificant(dominant, i, out var one, out var zero);
+                var val2 = GetMostSignificant(least, i, out var one2, out var zero2);
+                if(dominant.Count > 1)
+                dominant.RemoveAll(d => val == -1? d[i]=='0' : d[i] != val + '0');
+                if(least.Count > 1)
+                least.RemoveAll(d => val2 == -1 ? d[i] == '1' : d[i] == val2 + '0');
             }
-            var num1 = Convert.ToInt64(dominant, 2);
-            var num2 = Convert.ToInt64(opposite,2);
-            Console.WriteLine( num1*num2);
+
+            var dominantInt = Convert.ToInt32(dominant[0], 2);
+            var leastInt = Convert.ToInt32(least[0], 2);
+            Console.WriteLine(dominantInt*leastInt);
+        }
+
+        static int GetMostSignificant(List<string> bits, int index, out int one, out int zero)
+        {
+            one = 0;
+            zero = 0;
+            foreach(var b in bits)
+            {
+                if (b[index] == '0') zero++;
+                else one++;
+            }
+
+            if (one == zero) return -1;
+            return one > zero ? 1 : 0;
         }
 
         static void Solve2()
