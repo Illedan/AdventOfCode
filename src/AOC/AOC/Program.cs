@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace AOC
 {
@@ -11,8 +12,84 @@ namespace AOC
         private static string[] Lines;
         static void Main(string[] args)
         {
-            Solve3();
+            Solve4();
         }
+
+        static void Solve4()
+        {
+            Setup(4);
+            var boards = new List<int[][]>();
+            var drops = Lines[0].Split(',').Select(int.Parse).ToList();
+            for(var i = 2; i < Lines.Length; i+=6)
+            {
+                var next = new int[5][];
+                boards.Add(next);
+                for (var j = 0; j < 5; j++)
+                {
+                    next[j] = Lines[i + j].Split().Where(s => !string.IsNullOrEmpty(s)).Select(int.Parse).ToArray();
+                }
+            }
+
+            void Drop(int[][] board, int piece)
+            {
+                for(var i = 0; i < 5; i++)
+                {
+                    for(var j = 0; j < 5; j++)
+                    {
+                        if (board[i][j] == piece) board[i][j] = -1;
+                    }
+                }
+            }
+
+            bool IsWonDir(int[][] board, int x, int y, int dx, int dy)
+            {
+                for(var i = 0; i < 5; i++)
+                {
+                    if (board[x + dx * i][y + dy * i] != -1) return false;
+                }
+
+                return true;
+            }
+
+            bool IsWon(int[][] board)
+            {
+                for (var i = 0; i < 5; i++)
+                {
+                    if (IsWonDir(board, i, 0, 0, 1)) return true;
+                    if (IsWonDir(board, 0, i, 1, 0)) return true;
+                }
+
+                return false;
+            }
+
+            int CountNumbers(int[][] board)
+            {
+                var sum = 0;
+                for (var i = 0; i < 5; i++)
+                {
+                    for (var j = 0; j < 5; j++)
+                    {
+                        if (board[i][j] != -1) sum += board[i][j];
+                    }
+                }
+                return sum;
+            }
+
+            var dropIndex = 0;
+            while(boards.All(b => !IsWon(b)))
+            {
+                foreach (var b in boards)
+                {
+                    Drop(b, drops[dropIndex]);
+                }
+                dropIndex++;
+            }
+
+            var lastDrop = drops[dropIndex - 1];
+            var wonBoard = boards.First(b => IsWon(b));
+            Console.WriteLine(CountNumbers(wonBoard) * lastDrop);
+        }
+
 
         static void Solve3()
         {
@@ -86,6 +163,7 @@ namespace AOC
         }
 
         static int[] ReadInts => Lines.Select(int.Parse).ToArray();
+        static int[] ReadBitsAsInt => Lines.Select(l => Convert.ToInt32(l, 2)).ToArray();
 
         static void Setup(int number)
         {
