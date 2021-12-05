@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace AOC
@@ -12,7 +14,49 @@ namespace AOC
         private static string[] Lines;
         static void Main(string[] args)
         {
-            Solve4();
+            Solve5();
+        }
+
+        static void Solve5()
+        {
+            Setup(5);
+            // 576,67 -> 801,67
+            var lines = new List<Line>();
+            foreach(var l in Lines)
+            {
+                var splitted = l.Split(" -> ");
+                var first = splitted[0].Split(',').Select(int.Parse).ToArray();
+                var last = splitted[1].Split(',').Select(int.Parse).ToArray();
+                lines.Add(new Line(new Vector(first[0], first[1]), new Vector(last[0], last[1])));
+            }
+            int GetHash(Vector v)
+            {
+                return v.X + v.Y * 10000;
+            }
+
+            var seen = new int[10000000];
+            foreach(var l in lines)
+            {
+                if (!l.IsHorizontal()) continue;
+                var dx = Clamp(-1, l.V2.X - l.V1.X, 1);
+                var dy = Clamp(-1, l.V2.Y - l.V1.Y, 1);
+                var current = l.V1;
+                while(!current.Equals(l.V2))
+                {
+                    seen[GetHash(current)]++;
+                    current = new Vector(current.X + dx, current.Y + dy);
+                }
+                seen[GetHash(current)]++;
+            }
+
+            Console.WriteLine(seen.Count(s => s > 1));
+        }
+
+        static int Clamp(int min, int num, int max)
+        {
+            if (num < min) return min;
+            if (num > max) return max;
+            return num;
         }
 
         static void Solve4()
@@ -76,13 +120,15 @@ namespace AOC
             }
 
             var dropIndex = 0;
-            while(boards.All(b => !IsWon(b)))
+            while(true)
             {
+                boards.RemoveAll(b => IsWon(b));
                 foreach (var b in boards)
                 {
                     Drop(b, drops[dropIndex]);
                 }
                 dropIndex++;
+                if (boards.Count == 1 && IsWon(boards.First())) break;
             }
 
             var lastDrop = drops[dropIndex - 1];
@@ -168,6 +214,32 @@ namespace AOC
         static void Setup(int number)
         {
             Lines = File.ReadAllLines(Path.Combine(InputLocation, number + ".txt"));
+        }
+    }
+    public class Line
+    {
+        public Vector V1, V2;
+        public Line(Vector v1, Vector v2)
+        {
+            V1 = v1;
+            V2 = v2;
+        }
+
+        public bool IsHorizontal() => V1.X == V2.X || V1.Y == V2.Y;
+    }
+
+    public struct Vector : IEquatable<Vector>
+    {
+        public int X, Y;
+        public Vector(int x, int y)
+        {
+            X = x;
+            Y = y;
+        }
+
+        public bool Equals(Vector other)
+        {
+            return other.X == X && other.Y == Y;
         }
     }
 
