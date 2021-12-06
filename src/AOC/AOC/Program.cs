@@ -14,7 +14,34 @@ namespace AOC
         private static string[] Lines;
         static void Main(string[] args)
         {
-            Solve5();
+            Solve6();
+        }
+
+        static void Solve6()
+        {
+            Setup(6);
+            var fishes = Lines[0].Split(',').Select(int.Parse).ToArray();
+            var counts = new long[9];
+            foreach(var f in fishes)
+            {
+                counts[f]++;
+            }
+
+            var next = new long[9];
+            for(var i = 0; i < 256; i++)
+            {
+                for(var j = 1; j < 9; j++)
+                {
+                    next[j - 1] = counts[j];
+                }
+                next[8] = counts[0];
+                next[6] += counts[0];
+                var t = next;
+                next = counts;
+                counts = t;
+            }
+
+            Console.WriteLine(counts.Sum(c => c));
         }
 
         static void Solve5()
@@ -37,7 +64,7 @@ namespace AOC
             var seen = new int[10000000];
             foreach(var l in lines)
             {
-                if (!l.IsHorizontal()) continue;
+               // if (!l.IsHorizontal()) continue;
                 var dx = Clamp(-1, l.V2.X - l.V1.X, 1);
                 var dy = Clamp(-1, l.V2.Y - l.V1.Y, 1);
                 var current = l.V1;
