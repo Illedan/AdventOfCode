@@ -14,7 +14,31 @@ namespace AOC
         private static string[] Lines;
         static void Main(string[] args)
         {
-            Solve6();
+            Solve7();
+        }
+
+        static void Solve7()
+        {
+            Setup(7);
+            var numbers = Lines[0].Split(',').Select(int.Parse).ToList();
+            var min = numbers.Min();
+            var max = numbers.Max();
+            var needed = new int[max + 1];
+            var amount = new int[max + 1];
+            foreach(var n in numbers)
+            {
+                amount[n]++;
+            }
+
+            for(var i = 0; i < needed.Length; i++)
+            {
+                for(var j = 0; j < amount.Length; j++)
+                {
+                    needed[i] += Math.Abs(j - i) * amount[j];
+                }
+            }
+
+            Console.WriteLine(needed.Min());
         }
 
         static void Solve6()
