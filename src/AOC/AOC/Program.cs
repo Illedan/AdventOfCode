@@ -23,18 +23,22 @@ namespace AOC
             var numbers = Lines[0].Split(',').Select(int.Parse).ToList();
             var min = numbers.Min();
             var max = numbers.Max();
-            var needed = new int[max + 1];
-            var amount = new int[max + 1];
+            var needed = new long[max + 1];
+            var amount = new long[max + 1];
             foreach(var n in numbers)
             {
                 amount[n]++;
             }
-
+            var cost = new int[needed.Length];
+            for(var i = 1; i < cost.Length; i++)
+            {
+                cost[i] = cost[i - 1] + i;
+            }
             for(var i = 0; i < needed.Length; i++)
             {
                 for(var j = 0; j < amount.Length; j++)
                 {
-                    needed[i] += Math.Abs(j - i) * amount[j];
+                    needed[i] += cost[Math.Abs(j - i)] * amount[j];
                 }
             }
 
