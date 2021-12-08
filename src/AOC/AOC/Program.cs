@@ -16,7 +16,7 @@ namespace AOC
             Solve8();
         }
 
-        static void Solve8() // This became very ugly.
+        static void Solve8() 
         {
             Setup(8);
            
