@@ -21,20 +21,6 @@ namespace AOC
             Setup(8);
            
             var sum = 0;
-            var lengths = new HashSet<int> 
-            {
-                2,
-                4,
-                7,
-                3,
-            };
-            var partials = new Dictionary<int, string>
-            {
-                {5, "adg" },
-                {6, "abfg" }
-            };
-
-            var allchars = "abcdefg";
             foreach (var l in Lines)
             {
                 var needed = new List<string>
@@ -64,109 +50,43 @@ namespace AOC
 
                 var splitted = l.Split('|');
                 var firstPart = splitted[0].Trim().Split();
-                for(var j = 0; j < 10; j++) // repeat partials...
+                var rnd = new Random();
+
+                for (var z = 0; z < 100000000; z++)
                 {
-
-                    foreach (var f in firstPart)
+                    var cloned = charPossibilities.ToDictionary(c => c.Key, c => c.Value.ToList());
+                    foreach (var c in cloned.ToList())
                     {
-                        if (lengths.Contains(f.Length))
+                        if (c.Value.Count == 1) continue;
+                        var selected = cloned[c.Key][rnd.Next(cloned[c.Key].Count)];
+                        cloned[c.Key].RemoveAll(c2 => c2 != selected);
+                        foreach (var c2 in cloned)
                         {
-                            var chars = needed.First(n => n.Length == f.Length);
-                            foreach (var c in chars)
-                            {
-                                charPossibilities[c].RemoveAll(k => !f.Contains(k));
-                            }
-                            foreach (var c in allchars)
-                            {
-                                if (chars.Contains(c)) continue;
-                                charPossibilities[c].RemoveAll(k => f.Contains(k));
-                            }
+                            if (c2.Key == c.Key) continue;
+                            c2.Value.Remove(selected);
                         }
-                        if (partials.ContainsKey(f.Length))
-                        {
-                            var chars = partials[f.Length].ToList();
-                            var used = f.ToList();
-
-                            for(var i = 0; i < 20; i++)
-                            {
-                                if(used.Count == 1)
-                                {
-                                    charPossibilities[chars[0]].RemoveAll(c => !used.Contains(c));
-                                }
-                                foreach(var c in chars.ToList())
-                                {
-                                    if(charPossibilities[c].Count == 1)
-                                    {
-                                        used.Remove(charPossibilities[c][0]);
-                                        chars.Remove(c);
-                                    }
-                                }
-                            }
-                        }
-
-                        for (var i = 0; i < 1000; i++) // Could be optimized, but yolo.
-                        {
-                            foreach (var c in charPossibilities.Select(k => k).ToList())
-                            {
-                                if (c.Value.Count == 1)
-                                {
-                                    foreach (var c2 in charPossibilities)
-                                    {
-                                        if (c2.Key == c.Key) continue;
-                                        c2.Value.Remove(c.Value[0]);
-                                    }
-                                }
-                            }
-                        }
-
-                        
+                        if (cloned.Any(c2 => c2.Value.Count == 0)) break;
                     }
-                    for (var z = 0; z < 1000; z++)
+
+                    if (cloned.Any(c2 => c2.Value.Count == 0)) continue;
+                    var charNumbers = firstPart.ToList();
+                    foreach (var n in Enumerable.Range(0, 10))
                     {
-                        var cloned = charPossibilities.ToDictionary(c => c.Key, c => c.Value.ToList());
-                        var rnd = new Random();
-                        foreach (var c in cloned.ToList())
-                        {
-                            if (c.Value.Count == 1) continue;
-                            var selected = cloned[c.Key][rnd.Next(cloned[c.Key].Count)];
-                            cloned[c.Key].RemoveAll(c2 => c2 != selected);
-                            foreach (var c2 in cloned)
-                            {
-                                if (c2.Key == c.Key) continue;
-                                c2.Value.Remove(selected);
-                            }
-                            if (cloned.Any(c2 => c2.Value.Count == 0)) break;
-                        }
-
-                        if (cloned.Any(c2 => c2.Value.Count == 0)) continue;
-                        var charNumbers = firstPart.ToList();
-                        var numbers = Enumerable.Range(0, 10).ToList();
-                        foreach (var n in numbers)
-                        {
-                            var expected = needed[n];
-                            var actual = string.Join("", expected.Select(e => cloned[e][0]));
-                            var match = charNumbers.FirstOrDefault(c => c.Length == actual.Length && actual.All(c2 => c.Contains(c2)));
-                            if (match == null) break;
-                            charNumbers.Remove(match);
-                            actualChars[n] = match;
-                        }
-
-                        if (charNumbers.Count > 0) continue;
-                        charPossibilities = cloned;
-
-                        break;
+                        var expected = needed[n];
+                        var actual = string.Join("", expected.Select(e => cloned[e][0]));
+                        var match = charNumbers.FirstOrDefault(c => c.Length == actual.Length && actual.All(c2 => c.Contains(c2)));
+                        if (match == null) break;
+                        charNumbers.Remove(match);
+                        actualChars[n] = match;
                     }
-                    var amounts = charPossibilities.OrderBy(c => c.Key).Select(c => c.Value.Count).ToArray();
-                    var selectedChars = charPossibilities.OrderBy(c => c.Key).Select(c => c.Value[0]).ToArray();
 
-                    if (charPossibilities.OrderBy(c => c.Key).Select(c => c.Value.Count).ToArray().All(c => c == 1))
-                    {
-                        break;
-                    }
+                    if (charNumbers.Count > 0) continue;
+                    charPossibilities = cloned;
+
+                    break;
                 }
 
-
-                // Solve
+                // Solve - 1063760
                 var actualCharsList = actualChars.ToList();
                 var lastPart = splitted[1].Trim().Split();
                 var number = "";
