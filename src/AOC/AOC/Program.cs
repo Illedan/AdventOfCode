@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -14,7 +13,32 @@ namespace AOC
         private static string[] Lines;
         static void Main(string[] args)
         {
-            Solve7();
+            Solve8();
+        }
+
+        static void Solve8()
+        {
+            Setup(8);
+            var count = 0;
+            var lengths = new HashSet<int>
+            {
+                2,
+                4,
+                7,
+                3,
+            };
+            foreach(var l in Lines)
+            {
+                var splitted = l.Split('|')[1].Trim().Split();
+                foreach(var s in splitted)
+                {
+                    if (lengths.Contains(s.Length))
+                    {
+                        count++;
+                    }
+                }
+            }
+            Console.WriteLine(count);
         }
 
         static void Solve7()
