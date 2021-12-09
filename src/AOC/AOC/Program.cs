@@ -13,7 +13,46 @@ namespace AOC
         private static string[] Lines;
         static void Main(string[] args)
         {
-            Solve8();
+            Solve9();
+        }
+
+        static void Solve9()
+        {
+            Setup(9);
+
+            var board = new Board(Lines[0].Length, Lines.Length);
+            for(var x = 0; x < board.Width; x++)
+            {
+                for(var y = 0; y < board.Height; y++)
+                {
+                    board.Cells[x, y] = (int)(Lines[y][x] - '0');
+                }
+            }
+
+            bool IsLowPoint(int x, int y)
+            {
+                var value = board.Cells[x, y];
+                foreach(var adjacent in Vector.Directions)
+                {
+                    var x2 = x + adjacent.X;
+                    var y2 = y + adjacent.Y;
+                    if (!board.OnBoard(x2, y2)) continue;
+                    if (board.Cells[x2, y2] <= value) return false;
+                }
+
+                return true;
+            }
+
+            var sum = 0;
+            for (var x = 0; x < board.Width; x++)
+            {
+                for (var y = 0; y < board.Height; y++)
+                {
+                    if (IsLowPoint(x, y)) sum += board.Cells[x, y] + 1;
+                }
+            }
+
+            Console.WriteLine(sum);
         }
 
         static void Solve8() 
@@ -368,8 +407,34 @@ namespace AOC
         public bool IsHorizontal() => V1.X == V2.X || V1.Y == V2.Y;
     }
 
+    public class Board
+    {
+        public Board(int width, int height)
+        {
+            Width = width;
+            Height = height;
+            Cells = new int[Width, Height];
+        }
+
+        public int Width { get; }
+        public int Height { get; }
+        public int[,] Cells;
+
+        public bool OnBoard(int x, int y)
+        {
+            return x >= 0 && y >= 0 && x < Width && y < Height;
+        }
+    }
+
     public struct Vector : IEquatable<Vector>
     {
+        public static List<Vector> Directions = new List<Vector>
+        {
+            new Vector(0,1),
+            new Vector(1,0),
+            new Vector(0,-1),
+            new Vector(-1, 0),
+        };
         public int X, Y;
         public Vector(int x, int y)
         {
