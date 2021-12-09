@@ -21,6 +21,8 @@ namespace AOC
             Setup(9);
 
             var board = new Board(Lines[0].Length, Lines.Length);
+            var counter = 1;
+            var basins = new int[board.Width, board.Height];
             for(var x = 0; x < board.Width; x++)
             {
                 for(var y = 0; y < board.Height; y++)
@@ -43,16 +45,66 @@ namespace AOC
                 return true;
             }
 
-            var sum = 0;
+            void UpdateAll(int newValue, int prevValue)
+            {
+                for (var x = 0; x < board.Width; x++)
+                {
+                    for (var y = 0; y < board.Height; y++)
+                    {
+                        if (basins[x, y] == prevValue) basins[x, y] = newValue;
+                    }
+                }
+            }
+
+            void FloodFill(int x, int y)
+            {
+                if (board.Cells[x, y] == 9) return;
+                if (basins[x, y] == 0) basins[x, y] = counter++;
+                var value = board.Cells[x, y];
+                var basinValue = basins[x, y];
+                foreach (var adjacent in Vector.Directions)
+                {
+                    var x2 = x + adjacent.X;
+                    var y2 = y + adjacent.Y;
+                    if (!board.OnBoard(x2, y2)) continue;
+                    if (board.Cells[x2, y2] > value) continue;
+                    if (board.Cells[x2, y2] == 9) continue;
+                    if (basins[x2, y2] != 0) UpdateAll(basinValue, basins[x2, y2]);
+                    else basins[x2, y2] = basinValue;
+                }
+            }
+
+            List<Vector> CountBasin(int value)
+            {
+
+                var vals = new List<Vector>();
+                for (var x = 0; x < board.Width; x++)
+                {
+                    for (var y = 0; y < board.Height; y++)
+                    {
+                        if (basins[x, y] == value) vals.Add(new Vector(x, y));
+                    }
+                }
+
+                return vals;
+            }
+
             for (var x = 0; x < board.Width; x++)
             {
                 for (var y = 0; y < board.Height; y++)
                 {
-                    if (IsLowPoint(x, y)) sum += board.Cells[x, y] + 1;
+                    FloodFill(x, y);
                 }
             }
 
-            Console.WriteLine(sum);
+            var sizes = new List<List<Vector>>();
+            for(var i = 1; i < counter; i++)
+            {
+                var vects = CountBasin(i);
+                sizes.Add(vects);
+            }
+            var top3 = sizes.OrderByDescending(s => s.Count).Take(3).ToList();
+            Console.WriteLine(top3[0].Count*top3[1].Count*top3[2].Count);
         }
 
         static void Solve8() 
@@ -445,6 +497,11 @@ namespace AOC
         public bool Equals(Vector other)
         {
             return other.X == X && other.Y == Y;
+        }
+
+        public override string ToString()
+        {
+            return X + " " + Y;
         }
     }
 
