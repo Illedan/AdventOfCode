@@ -172,34 +172,22 @@ namespace AOC
         static void Solve8() 
         {
             Setup(8);
-            var needed = new List<string>
+            var connections = new List<string>
             {
-                "abcefg", // 0
-                "cf", // 1
-                "acdeg", // 2
-                "acdfg",// 3
-                "bcdf", // 4
-                "abdfg", // 5
-                "abdefg", // 6
-                "acf", // 7
-                "abcdefg", // 8
-                "abcdfg" // 9
+                "abcefg", "cf", "acdeg", "acdfg", "bcdf", "abdfg", "abdefg", "acf", "abcdefg", "abcdfg"
             };
 
             var sum = 0;
-            foreach (var l in Lines.Select(s => s.Split('|').Select(c => c.Trim()).ToArray()))
+            foreach (var input in Lines.Select(s => s.Split('|').Select(c => c.Trim()).ToArray()))
             {
-                for(var i = 0; i < int.MaxValue; i++) // Montecarlo
-                {
-                    var randomized = string.Join("",Enumerable.Range('a', 7).Select(c => (char)c).OrderBy(c => rnd.NextDouble()));
-                    var newNeeded = needed.Select(n => string.Join("", n.Select(c => randomized[c - 'a']).OrderBy(c => c))).ToList();
-                    if (l[0].Split().Select(s => string.Join("", s.OrderBy(c => c))).All(newNeeded.Contains))
-                    {
-                        sum += int.Parse(string.Join("", l[1].Split().Select(s => string.Join("", s.OrderBy(c => c))).Select(s => newNeeded.IndexOf(s))));
-                        break;
-                    }
-                }
+                var newNeeded = Enumerable.Range(0, int.MaxValue) // Montecarlo
+                    .Select(i => string.Join("", Enumerable.Range('a', 7).Select(c => (char)c).OrderBy(c => rnd.NextDouble())))
+                    .Select(randomized => connections.Select(n => string.Join("", n.Select(c => randomized[c - 'a']).OrderBy(c => c))).ToList())
+                    .First(newConnections => input[0].Split().Select(s => string.Join("", s.OrderBy(c => c))).All(newConnections.Contains));
+
+                sum += int.Parse(string.Join("", input[1].Split().Select(s => string.Join("", s.OrderBy(c => c))).Select(s => newNeeded.IndexOf(s))));
             }
+
             Console.WriteLine(sum); // Solve - 1063760
         }
 
