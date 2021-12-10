@@ -9,11 +9,12 @@ namespace AOC
 {
     class Program
     {
+        private static Random rnd = new Random();
         private static string InputLocation = "/Users/erikkvanli/Repos/AdventOfCode/Inputs";
         private static string[] Lines;
         static void Main(string[] args)
         {
-            Solve10();
+            Solve8();
         }
 
         static void Solve10()
@@ -171,87 +172,35 @@ namespace AOC
         static void Solve8() 
         {
             Setup(8);
-           
-            var sum = 0;
-            foreach (var l in Lines)
+            var needed = new List<string>
             {
-                var needed = new List<string>
-                {
-                    "abcefg", // 0
-                    "cf", // 1
-                    "acdeg", // 2
-                    "acdfg",// 3
-                    "bcdf", // 4
-                    "abdfg", // 5
-                    "abdefg", // 6
-                    "acf", // 7
-                    "abcdefg", // 8
-                    "abcdfg" // 9
-                };
-                var actualChars = new string[10];
+                "abcefg", // 0
+                "cf", // 1
+                "acdeg", // 2
+                "acdfg",// 3
+                "bcdf", // 4
+                "abdfg", // 5
+                "abdefg", // 6
+                "acf", // 7
+                "abcdefg", // 8
+                "abcdfg" // 9
+            };
 
-                var charPossibilities = new Dictionary<char, List<char>>();
-                for (var i = (int)'a'; i <= 'g'; i++)
+            var sum = 0;
+            foreach (var l in Lines.Select(s => s.Split('|').Select(c => c.Trim()).ToArray()))
+            {
+                for(var i = 0; i < int.MaxValue; i++) // Montecarlo
                 {
-                    charPossibilities[(char)i] = new List<char>();
-                    for (var j = (int)'a'; j <= 'g'; j++)
+                    var randomized = string.Join("",Enumerable.Range('a', 7).Select(c => (char)c).OrderBy(c => rnd.NextDouble()));
+                    var newNeeded = needed.Select(n => string.Join("", n.Select(c => randomized[c - 'a']).OrderBy(c => c))).ToList();
+                    if (l[0].Split().Select(s => string.Join("", s.OrderBy(c => c))).All(newNeeded.Contains))
                     {
-                        charPossibilities[(char)i].Add((char)j);
+                        sum += int.Parse(string.Join("", l[1].Split().Select(s => string.Join("", s.OrderBy(c => c))).Select(s => newNeeded.IndexOf(s))));
+                        break;
                     }
                 }
-
-                var splitted = l.Split('|');
-                var firstPart = splitted[0].Trim().Split();
-                var rnd = new Random();
-
-                for (var z = 0; z < 100000000; z++)
-                {
-                    var cloned = charPossibilities.ToDictionary(c => c.Key, c => c.Value.ToList());
-                    foreach (var c in cloned.ToList())
-                    {
-                        if (c.Value.Count == 1) continue;
-                        var selected = cloned[c.Key][rnd.Next(cloned[c.Key].Count)];
-                        cloned[c.Key].RemoveAll(c2 => c2 != selected);
-                        foreach (var c2 in cloned)
-                        {
-                            if (c2.Key == c.Key) continue;
-                            c2.Value.Remove(selected);
-                        }
-                        if (cloned.Any(c2 => c2.Value.Count == 0)) break;
-                    }
-
-                    if (cloned.Any(c2 => c2.Value.Count == 0)) continue;
-                    var charNumbers = firstPart.ToList();
-                    foreach (var n in Enumerable.Range(0, 10))
-                    {
-                        var expected = needed[n];
-                        var actual = string.Join("", expected.Select(e => cloned[e][0]));
-                        var match = charNumbers.FirstOrDefault(c => c.Length == actual.Length && actual.All(c2 => c.Contains(c2)));
-                        if (match == null) break;
-                        charNumbers.Remove(match);
-                        actualChars[n] = match;
-                    }
-
-                    if (charNumbers.Count > 0) continue;
-                    charPossibilities = cloned;
-
-                    break;
-                }
-
-                // Solve - 1063760
-                var actualCharsList = actualChars.ToList();
-                var lastPart = splitted[1].Trim().Split();
-                var number = "";
-                foreach(var item in lastPart)
-                {
-                    var match = actualCharsList.First(c => c.Length == item.Length && item.All(c2 => c.Contains(c2)));
-                    var index = actualCharsList.IndexOf(match);
-                    number += index;
-                }
-
-                sum += int.Parse(number);
             }
-            Console.WriteLine(sum);
+            Console.WriteLine(sum); // Solve - 1063760
         }
 
         static void Solve7()
