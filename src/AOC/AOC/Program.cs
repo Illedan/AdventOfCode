@@ -13,7 +13,53 @@ namespace AOC
         private static string[] Lines;
         static void Main(string[] args)
         {
-            Solve9();
+            Solve10();
+        }
+
+        static void Solve10()
+        {
+            Setup(10);
+            var dict = new Dictionary<char, char>
+            {
+                {'(',')'},
+                {'{','}'},
+                {'[',']'},
+                {'<','>'}
+            };
+            var points = new Dictionary<char, int>
+            {
+                {')',3},
+                {']',57},
+                {'}',1197},
+                {'>',25137}
+            };
+            var score = 0L;
+            foreach(var expression in Lines)
+            {
+                var b = new List<char>();
+                foreach (var c in expression)
+                {
+                    if (!"(){}[]<>".Contains(c))
+                    {
+                        continue;
+                    }
+                    if (dict.ContainsKey(c))
+                    {
+                        b.Add(dict[c]);
+                    }
+                    else if (b.Count > 0 && b[b.Count - 1] == c)
+                    {
+                        b.RemoveAt(b.Count - 1);
+                    }
+                    else
+                    {
+                        score += points[c];
+                        break;
+                    }
+                }
+            }
+
+            Console.WriteLine(score);
         }
 
         static void Solve9()
