@@ -28,15 +28,15 @@ namespace AOC
             };
             var points = new Dictionary<char, int>
             {
-                {')',3},
-                {']',57},
-                {'}',1197},
-                {'>',25137}
+                {')',1},
+                {']',2},
+                {'}',3},
+                {'>',4}
             };
-            var score = 0L;
-            foreach(var expression in Lines)
+
+            bool IsValid(string expression, out List<char> ending)
             {
-                var b = new List<char>();
+                var b = ending = new List<char>();
                 foreach (var c in expression)
                 {
                     if (!"(){}[]<>".Contains(c))
@@ -53,13 +53,28 @@ namespace AOC
                     }
                     else
                     {
-                        score += points[c];
-                        break;
+                        return false;
                     }
                 }
+
+                return true;
             }
 
-            Console.WriteLine(score);
+            var score = new List<long>();
+            foreach(var expression in Lines)
+            {
+                if (!IsValid(expression, out var ending)) continue;
+                var localScore = 0L;
+                ending.Reverse();
+                foreach (var c in ending)
+                {
+                    localScore *= 5;
+                    localScore += points[c];
+                }
+                score.Add(localScore);
+            }
+
+            Console.WriteLine(score.OrderBy(s => s).ToList()[score.Count/2]);
         }
 
         static void Solve9()
