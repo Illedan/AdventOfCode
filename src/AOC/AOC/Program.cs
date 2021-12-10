@@ -181,14 +181,14 @@ namespace AOC
             foreach (var input in Lines.Select(s => s.Split('|').Select(c => c.Trim()).ToArray()))
             {
                 var newNeeded = Enumerable.Range(0, int.MaxValue) // Montecarlo
-                    .Select(i => string.Join("", Enumerable.Range('a', 7).Select(c => (char)c).OrderBy(c => rnd.NextDouble())))
+                    .Select(i => string.Join("", "abcdefg".OrderBy(c => rnd.NextDouble())))
                     .Select(randomized => connections.Select(n => string.Join("", n.Select(c => randomized[c - 'a']).OrderBy(c => c))).ToList())
                     .First(newConnections => input[0].Split().Select(s => string.Join("", s.OrderBy(c => c))).All(newConnections.Contains));
 
                 sum += int.Parse(string.Join("", input[1].Split().Select(s => string.Join("", s.OrderBy(c => c))).Select(s => newNeeded.IndexOf(s))));
             }
 
-            Console.WriteLine(sum); // Solve - 1063760
+            Console.WriteLine(sum); // 1063760
         }
 
         static void Solve7()
