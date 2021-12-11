@@ -32,6 +32,7 @@ namespace AOC
 
             void DoStep()
             {
+                flashes = 0;
                 for (var x = 0; x < board.Width; x++)
                 {
                     for (var y = 0; y < board.Height; y++)
@@ -76,12 +77,17 @@ namespace AOC
                 }
             }
 
-            for(var i = 0; i < 100; i++)
+            for(var i = 0; i < 100000; i++)
             {
                 DoStep();
+                if(flashes == board.Width * board.Height)
+                {
+                    Console.WriteLine(i+1);
+                    break;
+                }
             }
 
-            Console.WriteLine(flashes);
+            //Console.WriteLine(flashes);
         }
 
         static void Solve10()
