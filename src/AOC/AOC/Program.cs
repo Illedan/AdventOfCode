@@ -14,7 +14,74 @@ namespace AOC
         private static string[] Lines;
         static void Main(string[] args)
         {
-            Solve8();
+            Solve11();
+        }
+
+        static void Solve11()
+        {
+            Setup(11);
+            var board = new Board(Lines[0].Length, Lines.Length);
+            for (var x = 0; x < board.Width; x++)
+            {
+                for (var y = 0; y < board.Height; y++)
+                {
+                    board.Cells[x, y] = Lines[y][x] - '0';
+                }
+            }
+            var flashes = 0;
+
+            void DoStep()
+            {
+                for (var x = 0; x < board.Width; x++)
+                {
+                    for (var y = 0; y < board.Height; y++)
+                    {
+                        board.Cells[x, y]++;
+                    }
+                }
+                // 10 skal flashe
+                // 
+                var hasFlash = true;
+                while (hasFlash)
+                {
+                    hasFlash = false;
+                    for (var x = 0; x < board.Width; x++)
+                    {
+                        for (var y = 0; y < board.Height; y++)
+                        {
+                            if(board.Cells[x, y] == 10)
+                            {
+                                flashes++;
+                                hasFlash = true;
+                                foreach(var dir in Vector.DirectionsDiags)
+                                {
+                                    var x2 = x + dir.X;
+                                    var y2 = y + dir.Y;
+                                    if (!board.OnBoard(x2, y2)) continue;
+                                    if (board.Cells[x2, y2] == 10) continue;
+                                    board.Cells[x2, y2]++;
+                                }
+                                board.Cells[x, y]++;
+                            }
+                        }
+                    }
+                }
+
+                for (var x = 0; x < board.Width; x++)
+                {
+                    for (var y = 0; y < board.Height; y++)
+                    {
+                        if (board.Cells[x, y] >= 10) board.Cells[x, y] = 0;
+                    }
+                }
+            }
+
+            for(var i = 0; i < 100; i++)
+            {
+                DoStep();
+            }
+
+            Console.WriteLine(flashes);
         }
 
         static void Solve10()
@@ -485,6 +552,19 @@ namespace AOC
             new Vector(0,-1),
             new Vector(-1, 0),
         };
+
+        public static List<Vector> DirectionsDiags = new List<Vector>
+        {
+            new Vector(0,1),
+            new Vector(1,0),
+            new Vector(0,-1),
+            new Vector(-1, 0),
+            new Vector(1,1),
+            new Vector(1,-1),
+            new Vector(-1,-1),
+            new Vector(-1, 1),
+        };
+
         public int X, Y;
         public Vector(int x, int y)
         {
