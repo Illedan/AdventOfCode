@@ -35,7 +35,7 @@ namespace AOC
             var end = graph.First(g => g.ID == "end");
             var start = graph.First(g => g.ID == "start");
             var paths = 0;
-
+            Node theSmall = null;
             void DFS(Node node, HashSet<Node> path)
             {
                 if(node == end)
@@ -46,6 +46,13 @@ namespace AOC
 
                 foreach(var n in node.Neighbours)
                 {
+                    if(theSmall == null && !n.Big && n != end && start != n && path.Contains(n))
+                    {
+                        theSmall = n;
+                        DFS(n, path);
+                        theSmall = null;
+                        continue;
+                    }
                     if (path.Contains(n)) continue;
                     if (!n.Big) path.Add(n);
                     DFS(n, path);
