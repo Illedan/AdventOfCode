@@ -14,7 +14,49 @@ namespace AOC
         private static string[] Lines;
         static void Main(string[] args)
         {
-            Solve11();
+            Solve12();
+        }
+
+        static void Solve12()
+        {
+            Setup(12);
+            var graph = new HashSet<Node>();
+            foreach(var l in Lines)
+            {
+                var splitted = l.Split('-');
+                var n = graph.FirstOrDefault(g => g.ID == splitted[0]) ?? new Node(splitted[0]);
+                var n2 = graph.FirstOrDefault(g => g.ID == splitted[1]) ?? new Node(splitted[1]);
+                graph.Add(n);
+                graph.Add(n2);
+                n.Neighbours.Add(n2);
+                n2.Neighbours.Add(n);
+            }
+
+            var end = graph.First(g => g.ID == "end");
+            var start = graph.First(g => g.ID == "start");
+            var paths = 0;
+
+            void DFS(Node node, HashSet<Node> path)
+            {
+                if(node == end)
+                {
+                    paths++;
+                    return;
+                }
+
+                foreach(var n in node.Neighbours)
+                {
+                    if (path.Contains(n)) continue;
+                    if (!n.Big) path.Add(n);
+                    DFS(n, path);
+                    path.Remove(n);
+                }
+            }
+            var initialPath = new HashSet<Node>();
+            initialPath.Add(start);
+
+            DFS(start, initialPath);
+            Console.WriteLine(paths);
         }
 
         static void Solve11()
@@ -549,6 +591,17 @@ namespace AOC
         }
     }
 
+    public class Node
+    {
+        public HashSet<Node> Neighbours = new HashSet<Node>();
+        public bool Big;
+        public string ID;
+        public Node(string id)
+        {
+            ID = id;
+            Big = id.All(c => char.IsUpper(c));
+        }
+    }
     public struct Vector : IEquatable<Vector>
     {
         public static List<Vector> Directions = new List<Vector>
