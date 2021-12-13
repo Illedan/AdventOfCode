@@ -14,7 +14,105 @@ namespace AOC
         private static string[] Lines;
         static void Main(string[] args)
         {
-            Solve12();
+            Solve13();
+        }
+
+        static void Solve13()
+        {
+            Setup(13);
+            var grid = new AdaptiveBoard();
+            var i = 0;
+            for(; i < Lines.Length; i++)
+            {
+                if (string.IsNullOrEmpty(Lines[i])) break;
+                var pos = Lines[i].Split(',').Select(int.Parse).ToArray();
+                grid.Add(pos[0], pos[1]);
+            }
+
+            var folds = new List<(int pos, bool x)>();
+            for(; i < Lines.Length; i++)
+            {
+                if (string.IsNullOrEmpty(Lines[i])) continue;
+                var l = Lines[i].Replace("fold along ", "");
+                var num = int.Parse(l.Split('=')[1]);
+                if (l[0] == 'y') folds.Add(new (num, false));
+                else folds.Add(new (num, true));
+            }
+
+            int CountSet()
+            {
+                var sum = 0;
+                for(var x = 0; x < grid.Width; x++)
+                {
+                    for(var y = 0; y < grid.Height; y++)
+                    {
+                        if (grid.Board[x, y]) sum++;
+                    }
+                }
+
+                return sum;
+            }
+
+            void PrintBoard()
+            {
+                var full = new List<string>();
+                for(var y = 0; y < grid.Height; y++)
+                {
+                    var s = "";
+                    for(var x = 0; x < grid.Width; x++)
+                    {
+                        s += grid.Board[x, y] ? "#" : ".";
+                    }
+
+                    full.Add(s);
+                }
+
+                File.WriteAllLines("Number.txt", full);
+            }
+
+            void FoldX(int pos)
+            {
+                var exceeding = (grid.Width - pos) - pos;
+                if(exceeding < 0)
+                {
+                    // Overflowing flip
+                    grid.ShiftRight(Math.Abs(exceeding));
+                    pos += exceeding; // correction
+                }
+
+                grid.FlipX(pos);
+            }
+
+            void FoldY(int pos)
+            {
+                var exceeding = (grid.Height - pos) - pos;
+                if (exceeding < 0)
+                {
+                    // Overflowing flip
+                    grid.ShiftDown(Math.Abs(exceeding));
+                    pos += exceeding; // correction
+                }
+
+                grid.FlipY(pos);
+            }
+
+
+            var width = grid.Width;
+            var height = grid.Height;
+            foreach (var f in folds)
+            {
+                if (f.x)
+                {
+                    FoldX(f.pos);
+                }
+                else
+                {
+                    FoldY(f.pos);
+                }
+
+                Console.Error.WriteLine("Num set: " + CountSet());
+            }
+            PrintBoard();
         }
 
         static void Solve12()
@@ -577,6 +675,127 @@ namespace AOC
         }
 
         public bool IsHorizontal() => V1.X == V2.X || V1.Y == V2.Y;
+    }
+
+    public class AdaptiveBoard
+    {
+        public int Width;
+        public int Height;
+
+        public bool[,] Board = new bool[0,0];
+        public void Add(int x, int y)
+        {
+            if (x >= Width || y >= Height) Update(x+1, y+1);
+            Board[x, y] = true;
+        }
+
+        public void ShiftRight(int amount)
+        {
+            Update(Width + amount, Height);
+            for (var x = Width - amount-1; x >= 0; x--)
+            {
+                for (var y = 0; y < Height; y++)
+                {
+                    Board[x + amount, y] = Board[x, y];
+                }
+            }
+
+            for(var x = 0; x < amount; x++)
+            {
+                for(var y = 0; y < Height; y++)
+                {
+                    Board[x, y] = false;
+                }
+            }
+        }
+
+        public void ShiftDown(int amount)
+        {
+            Update(Width, Height + amount);
+            for(var x = 0; x < Width; x++)
+            {
+                for(var y = Height-amount-1; y >= 0; y--)
+                {
+                    Board[x, y + amount] = Board[x, y];
+                }
+            }
+
+            for (var x = 0; x < Width; x++)
+            {
+                for (var y = 0; y < amount; y++)
+                {
+                    Board[x, y] = false;
+                }
+            }
+        }
+
+        public void FlipX(int pos)
+        {
+            for(var y = 0; y < Height; y++) // validate collision
+            {
+                if (Board[pos, y]) throw new InvalidOperationException("Wrong flip on: x:" + pos + " " + y);
+            }
+
+            for (var x = Width-1; x > pos; x--)
+            {
+                for (var y = 0; y < Height; y++)
+                {
+                    Board[pos - (x-pos), y] |= Board[x, y];
+                }
+            }
+            UpdateDown(pos, Height);
+        }
+
+        public void FlipY(int pos)
+        {
+            for (var x = 0; x < Width; x++) // validate collision
+            {
+                if (Board[x, pos]) throw new InvalidOperationException("Wrong flip on: x:" + x + " " + pos);
+            }
+
+            for(var x = 0; x < Width; x++)// 
+            {
+                for(var y = Height-1; y > pos; y--)
+                {
+                    Board[x, pos - (y-pos)] |= Board[x, y];
+                }
+            }
+            UpdateDown(Width, pos);
+        }
+
+        private void UpdateDown(int width, int height)
+        {
+            Width = width;
+            Height = height;
+            var next = new bool[width, height];
+            for (var x = 0; x < Width; x++)
+            {
+                for (var y = 0; y < Height; y++)
+                {
+                    next[x, y] = Board[x, y];
+                }
+            }
+
+            Board = next;
+        }
+
+        private void Update(int width, int height)
+        {
+            width = Math.Max(Width, width);
+            height = Math.Max(Height, height);
+            var next = new bool[width, height];
+            for(var x = 0; x < Width; x++)
+            {
+                for(var y = 0; y < Height; y++)
+                {
+                    next[x, y] = Board[x, y];
+                }
+            }
+
+            Board = next;
+            Width = width;
+            Height = height;
+        }
     }
 
     public class Board
