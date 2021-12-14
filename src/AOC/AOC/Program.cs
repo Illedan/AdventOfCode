@@ -14,7 +14,46 @@ namespace AOC
         private static string[] Lines;
         static void Main(string[] args)
         {
-            Solve13();
+            Solve14();
+        }
+
+        static void Solve14()
+        {
+            Setup(14);
+            var initial = Lines[0].ToList();
+            var temp = new List<char>();
+            var rules = new Dictionary<string, char>();
+            for(var i = 2; i < Lines.Length; i++)
+            {
+                //CN -> C
+                var splitted = Lines[i].Split(" -> ");
+                rules.Add(splitted[0], splitted[1][0]);
+            }
+
+            for(var i = 0; i < 10; i++)
+            {
+                temp.Clear();
+                for(var j = 0; j < initial.Count-1; j++)
+                {
+                    var next = initial[j] + "" + initial[j + 1];
+                    temp.Add(initial[j]);
+                    if(rules.TryGetValue(next, out var key))
+                    {
+                        temp.Add(key);
+                    }
+                    else
+                    {
+                        // nothing?
+                    }
+                }
+                temp.Add(initial[initial.Count - 1]);
+                var s = string.Join("", temp);
+                var t = temp;
+                temp = initial;
+                initial = t;
+            }
+
+            Console.WriteLine(initial.GroupBy(i => i).Max(i => i.Count())- initial.GroupBy(i => i).Min(i => i.Count()));
         }
 
         static void Solve13()
