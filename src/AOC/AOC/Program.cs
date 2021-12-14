@@ -20,40 +20,84 @@ namespace AOC
         static void Solve14()
         {
             Setup(14);
-            var initial = Lines[0].ToList();
+            var allLetters = Lines.SelectMany(i => i).Where(i => char.IsUpper(i)).Distinct().ToList();
+            char Map(char a)
+            {
+                return (char)(allLetters.IndexOf(a) + 'A');
+            }
+
+            var initial = Lines[0].Select(Map).ToList();
             var temp = new List<char>();
-            var rules = new Dictionary<string, char>();
+            var allNodes = new List<PolyNode>();
+            for(var i = 0; i < allLetters.Count; i++)
+            {
+                for(var j = 0; j < allLetters.Count; j++)
+                {
+                    var letters = (char)('A' + i) + "" + (char)('A' + j);
+                    allNodes.Add(new PolyNode
+                    {
+                        Key = letters,
+                        Amounts = new long[41, allLetters.Count]
+                    });
+                    var last = allNodes.Last();
+                    foreach(var k in last.Key)
+                    {
+                        last.Amounts[0, k - 'A']++;
+                    }
+                }
+            }
+
             for(var i = 2; i < Lines.Length; i++)
             {
                 //CN -> C
-                var splitted = Lines[i].Split(" -> ");
-                rules.Add(splitted[0], splitted[1][0]);
+                var splitted = Lines[i].Split(" -> ").Select(s => string.Join("", s.Select(Map))).ToArray();
+                
+                // Make childrens
+                var node = allNodes.First(n => n.Key == splitted[0]);
+                var res = node.Key[0] + splitted[1] + node.Key[1];
+                node.Common = splitted[1][0];
+                var child1 = allNodes.First(n => n.Key == res[0] + "" + res[1]);
+                var child2 = allNodes.First(n => n.Key == res[1] + "" + res[2]);
+                node.Children[0] = child1;
+                node.Children[1] = child2;
             }
 
-            for(var i = 0; i < 10; i++)
+            for(var i = 1; i < 41; i++)
             {
-                temp.Clear();
-                for(var j = 0; j < initial.Count-1; j++)
+                foreach(var n in allNodes)
                 {
-                    var next = initial[j] + "" + initial[j + 1];
-                    temp.Add(initial[j]);
-                    if(rules.TryGetValue(next, out var key))
+                    for(var j = 0; j < allLetters.Count; j++)
                     {
-                        temp.Add(key);
+                        n.Amounts[i, j] += n.Children.Sum(c => c.Amounts[i - 1, j]);
                     }
-                    else
-                    {
-                        // nothing?
-                    }
+                    n.Amounts[i, n.Common - 'A']--;
                 }
-                temp.Add(initial[initial.Count - 1]);
-                var s = string.Join("", temp);
-                var t = temp;
-                temp = initial;
-                initial = t;
             }
 
-            Console.WriteLine(initial.GroupBy(i => i).Max(i => i.Count())- initial.GroupBy(i => i).Min(i => i.Count()));
+            var counts = new long[allLetters.Count];
+            for(var i = 0; i < initial.Count-1; i++)
+            {
+                var key = initial[i] + "" + initial[i + 1];
+                var node = allNodes.First(n => n.Key == key);
+                for(var j = 0; j < allLetters.Count; j++)
+                {
+                    counts[j] += node.Amounts[40, j];
+                }
+            }
+            for (var i = 1; i < initial.Count-1; i++)
+            {
+                counts[initial[i] - 'A']--;
+            }
+
+            Console.WriteLine(counts.Max() - counts.Min());
+        }
+
+        class PolyNode
+        {
+            public long[,] Amounts;
+            public string Key; // 2 letters
+            public PolyNode[] Children = new PolyNode[2];
+            public char Common;
         }
 
         static void Solve13()
