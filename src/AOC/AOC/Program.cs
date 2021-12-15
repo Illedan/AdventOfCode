@@ -20,17 +20,28 @@ namespace AOC
         static void Solve15()
         {
             Setup(15);
-
-            var seen = new HashSet<Vector>();
-            var grid = new Board(Lines[0].Length, Lines.Length);
-            var goal = new Vector(grid.Width - 1, grid.Height - 1);
-            for(var i = 0; i < grid.Width; i++)
+            var grid = new Board(Lines[0].Length*5, Lines.Length*5);
+            for(var x = 0; x < 5; x++)
             {
-                for(var j = 0; j < grid.Height; j++)
+                for(var y = 0; y < 5; y++)
                 {
-                    grid.Cells[i, j] = (int)(Lines[j][i] - '0');
+                    var addition = x + y;
+                    for (var i = 0; i < Lines[0].Length; i++)
+                    {
+                        for (var j = 0; j < Lines.Length; j++)
+                        {
+                            ref var cell = ref grid.Cells[x * Lines[0].Length + i, y * Lines.Length + j];
+                            cell = (int)(Lines[j][i] - '0') + addition;
+                            while (cell > 9) cell -= 9;
+                        }
+                    }
                 }
             }
+
+
+
+            var seen = new HashSet<Vector>();
+            var goal = new Vector(grid.Width - 1, grid.Height - 1);
             var items = new List<Waypoint>();
 
             double GetScore(Vector pos, int risk)
