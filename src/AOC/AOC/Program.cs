@@ -14,7 +14,86 @@ namespace AOC
         private static string[] Lines;
         static void Main(string[] args)
         {
-            Solve14();
+            Solve15();
+        }
+
+        static void Solve15()
+        {
+            Setup(15);
+
+            var seen = new HashSet<Vector>();
+            var grid = new Board(Lines[0].Length, Lines.Length);
+            var goal = new Vector(grid.Width - 1, grid.Height - 1);
+            for(var i = 0; i < grid.Width; i++)
+            {
+                for(var j = 0; j < grid.Height; j++)
+                {
+                    grid.Cells[i, j] = (int)(Lines[j][i] - '0');
+                }
+            }
+            var items = new List<Waypoint>();
+
+            double GetScore(Vector pos, int risk)
+            {
+                return goal.Distance(pos)*0.0000001 + risk;
+            }
+
+            void InsertSorted(Waypoint point)
+            {
+                var index = items.BinarySearch(point);
+                if (index < 0) index = ~index;
+                items.Insert(index, point);
+            }
+
+            var start = new Vector(0, 0);
+            seen.Add(start);
+            items.Add(new Waypoint(start, GetScore(start, 0), 0, null));
+
+            while (true)
+            {
+                if (items.Count == 0) break;
+                var first = items.First();
+                items.RemoveAt(0);
+
+                if (first.Position.Equals(goal))
+                {
+                    Console.WriteLine(first.TotRisk);
+                    break;
+                }
+
+                foreach (var delta in Vector.Directions)
+                {
+                    var nx = first.Position.X + delta.X;
+                    var ny = first.Position.Y + delta.Y;
+                    var next = new Vector(nx, ny);
+                    if (!grid.OnBoard(nx, ny)) continue;
+                    if (!seen.Add(next)) continue;
+                    var totRisk = first.TotRisk + grid.Cells[nx, ny];
+                    InsertSorted(new Waypoint(next, GetScore(next, totRisk), totRisk, first));
+                }
+            }
+        }
+
+
+        public class Waypoint : IComparable<Waypoint>
+        {
+            public Waypoint(Vector position, double score, int totRisk, Waypoint parent = null)
+            {
+                Position = position;
+                Score = score;
+                TotRisk = totRisk;
+                Parent = parent;
+            }
+
+            public double Score;
+            public Vector Position;
+            public Waypoint Parent;
+            public int TotRisk;
+
+            public int CompareTo(Waypoint other)
+            {
+                return Score.CompareTo(other.Score);
+            }
         }
 
         static void Solve14()
@@ -949,7 +1028,14 @@ namespace AOC
         {
             return X + " " + Y;
         }
+
+        public double Distance(Vector vector)
+        {
+            return Math.Sqrt(Pow(vector.X - X) + Pow(vector.Y - Y));
+        }
+        public static double Pow(double x) => x * x;
     }
+
 
     public class KeyValue<T>
     {
